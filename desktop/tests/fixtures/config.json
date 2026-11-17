@@ -1,0 +1,237 @@
+{
+    "default_profile": "Krita",
+    "applications": {
+        "brave.exe": "Browser",
+        "opera.exe": "Browser",
+        "opera_gx.exe": "Browser"
+    },
+    "profiles": {
+        "General": {
+            "KEY:1": {
+                "type": "hotkey",
+                "keys": [
+                    "ctrl",
+                    "f"
+                ]
+            },
+            "KEY:2": {
+                "type": "unassigned"
+            },
+            "ENC2:CW": {
+                "type": "media_key",
+                "key": "volume_up"
+            },
+            "ENC2:CCW": {
+                "type": "media_key",
+                "key": "volume_down"
+            },
+            "ENC2:PRESS": {
+                "type": "media_key",
+                "key": "volume_mute"
+            },
+            "KEY:3": {
+                "type": "hotkey",
+                "keys": [
+                    "ctrl",
+                    "c"
+                ]
+            },
+            "KEY:4": {
+                "type": "hotkey",
+                "keys": [
+                    "ctrl",
+                    "v"
+                ]
+            },
+            "KEY:12": {
+                "type": "hotkey",
+                "keys": [
+                    "ctrl",
+                    "shift",
+                    "s"
+                ]
+            },
+            "KEY:9": {
+                "type": "hotkey",
+                "keys": [
+                    "ctrl",
+                    "f"
+                ]
+            }
+        },
+        "Browser": {
+            "KEY:1": {
+                "type": "hotkey",
+                "keys": [
+                    "ctrl",
+                    "shift",
+                    "t"
+                ]
+            },
+            "KEY:2": {
+                "type": "hotkey",
+                "keys": [
+                    "ctrl",
+                    "t"
+                ]
+            },
+            "ENC2:CW": {
+                "type": "media_key",
+                "key": "volume_up"
+            },
+            "ENC2:CCW": {
+                "type": "media_key",
+                "key": "volume_down"
+            },
+            "ENC2:PRESS": {
+                "type": "media_key",
+                "key": "play_pause"
+            },
+            "KEY:3": {
+                "type": "hotkey",
+                "keys": [
+                    "ctrl",
+                    "c"
+                ]
+            },
+            "KEY:4": {
+                "type": "hotkey",
+                "keys": [
+                    "ctrl",
+                    "v"
+                ]
+            },
+            "KEY:5": {
+                "type": "hotkey",
+                "keys": [
+                    "apostrophe"
+                ]
+            },
+            "KEY:12": {
+                "type": "hotkey",
+                "keys": [
+                    "ctrl",
+                    "shift",
+                    "t"
+                ]
+            },
+            "KEY:9": {
+                "type": "media_key",
+                "key": "volume_mute"
+            },
+            "ENC1:CCW": {
+                "type": "media_key",
+                "key": "scroll_up"
+            },
+            "ENC1:CW": {
+                "type": "media_key",
+                "key": "scroll_down"
+            },
+            "ENC1:PRESS": {
+                "type": "media_key",
+                "key": "volume_mute"
+            }
+        },
+        "Affter Effects": {
+            "ENC1:CW": {
+                "type": "hotkey",
+                "keys": [
+                    "ctrl",
+                    "right"
+                ]
+            },
+            "ENC1:CCW": {
+                "type": "hotkey",
+                "keys": [
+                    "ctrl",
+                    "left"
+                ]
+            }
+        },
+        "Blender": {
+            "ENC1:CCW": {
+                "type": "hotkey",
+                "keys": [
+                    "left"
+                ]
+            },
+            "ENC1:CW": {
+                "type": "hotkey",
+                "keys": [
+                    "right"
+                ]
+            }
+        },
+        "Krita": {
+            "KEY:1": {
+                "type": "hotkey",
+                "keys": [
+                    "l"
+                ]
+            },
+            "KEY:2": {
+                "type": "hotkey",
+                "keys": [
+                    "ctrl",
+                    "d"
+                ]
+            },
+            "ENC1:CCW": {
+                "type": "hotkey",
+                "keys": [
+                    "4"
+                ]
+            },
+            "ENC1:CW": {
+                "type": "hotkey",
+                "keys": [
+                    "6"
+                ]
+            },
+            "ENC1:PRESS": {
+                "type": "hotkey",
+                "keys": [
+                    "5"
+                ]
+            },
+            "ENC2:CW": {
+                "type": "media_key",
+                "key": "volume_up"
+            },
+            "ENC2:CCW": {
+                "type": "media_key",
+                "key": "volume_down"
+            },
+            "ENC2:PRESS": {
+                "type": "media_key",
+                "key": "play_pause"
+            }
+        }
+    },
+    "labels": {
+        "General": {
+            "KEY:1": "1",
+            "ENC2:PRESS": "Pause",
+            "KEY:9": "test"
+        },
+        "Browser": {
+            "KEY:1": "reopen",
+            "KEY:9": "mute",
+            "ENC2:CW": "Volume",
+            "ENC2:CCW": "Volume",
+            "ENC1:ROTATE": "Scrooll",
+            "ENC2:ROTATE": "Volume",
+            "ENC2:PRESS": "Play",
+            "ENC1:PRESS": "Mute",
+            "KEY:12": "revive Tab"
+        },
+        "Krita": {
+            "KEY:1": "Lasso Tool",
+            "KEY:2": "Deselect"
+        },
+        "Affter Effects": {
+            "ENC1:CCW": "time line"
+        }
+    },
+    "locked_profile": null
+}

@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.venv-*/
+venv/
+
+# Builds (rebuild from desktop/)
+desktop/build/
+desktop/dist/
+desktop/release/
+desktop/release-staging/
+*.app/
+
+# Live config used by source runs / builds; snapshots live in configs/
+desktop/config.json
+
+# Firmware build output
+firmware/**/.pio/
+
+# OS / editor junk
+.DS_Store
+Thumbs.db
+*~
+.vscode/
+.idea/
