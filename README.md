@@ -207,15 +207,17 @@ Tests: `cd desktop/tests` then `python -m unittest discover -s .` with
 | [`firmware/`](firmware/) | ESP32-C3 firmware (source coming soon) |
 | [`docs/hardware/`](docs/hardware/) | Wiring pictures |
 | [`docs/design/`](docs/design/) | The original UI design mockup |
+| [`docs/journey.md`](docs/journey.md) | The project journey, with photos |
 | [`docs/presentation/`](docs/presentation/) | Plan for the demo video |
 | [`STATE.md`](STATE.md) | Development status and decisions, for contributors |
 
 ## Roadmap
 
 - [x] **V1:** 12 keys, 2 knobs with clicks, profiles, automatic profiles, Windows + macOS
-- [x] Tray / menu-bar mode, start at login, Windows installer, macOS disk image
+- [x] Tray mode, start at login, Windows installer (`MacroPad-Setup-1.0.0.exe`)
+- [ ] macOS download (`.dmg`): build script ready, not yet built and tested on a Mac
+      ([how to finish it](docs/finish-on-mac.md))
 - [ ] Firmware source in this repo
-- [ ] Test the macOS build of the new features
 - [ ] **V1.5:** Fn layer, knob modifiers (Fn + knob), tap vs hold
 - [ ] **V2:** Bluetooth and a battery for wireless use
 - [ ] **V2:** advanced key combos and a redesigned case
@@ -228,6 +230,9 @@ keys shared pins, causing ghost presses. So I mapped every connection, rewired t
 a matrix, wrote new firmware that sends simple text messages, and built this desktop app,
 first for Windows and then for macOS. Two weeks later it was a reliable tool I use every
 day. This repo is everything I learned, so it can help someone else build or fix their own.
+
+**With photos:** [the full project journey](docs/journey.md), from opening the case to the
+rebuilt wiring and the redesigned app.
 
 Thanks to the maker who built the original pad. None of this would have started without it.
 

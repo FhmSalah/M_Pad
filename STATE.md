@@ -64,6 +64,8 @@ Status, decisions and to-dos for anyone working on the code. User docs are in
 
 ## Next steps
 
+0. **On the Mac:** follow `docs/finish-on-mac.md`; `tools/finish_on_mac.sh` does steps 1–2
+   (copies the firmware, runs tests, builds the `.dmg`).
 1. **Add the firmware source** to `firmware/` (PlatformIO project, without `.pio/`).
 2. **Test on a Mac:** run the tests, run from source, then `./build_macos.sh` and check
    the drag-install, Open Anyway, Accessibility, menu bar, start at login, the first-run
