@@ -12,7 +12,7 @@ desktop/release/
 desktop/release-staging/
 *.app/
 
-# Live config used by source runs / builds; snapshots live in configs/
+# Config used by source runs on Windows (created on first run)
 desktop/config.json
 
 # Firmware build output
@@ -24,3 +24,6 @@ Thumbs.db
 *~
 .vscode/
 .idea/
+
+# Personal notes, real configs and old internal docs: kept locally, never published
+private/

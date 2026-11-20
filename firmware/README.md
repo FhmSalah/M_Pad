@@ -1,20 +1,26 @@
-# Firmware (ESP32-C3) — not copied in yet
+# Firmware (ESP32-C3)
 
-The firmware source is a PlatformIO project on the Mac. Copy it here next time you
-work on the Mac, **without** build outputs (`.pio/`).
+**The source code will be added here soon** (a PlatformIO project).
 
-- Framework: Arduino, board `esp32-c3-devkitm-1`, serial 115200, native USB CDC (not HID).
-- Status: **V1 frozen**. Don't change it without a demonstrated firmware bug.
-- Protocol: answers `WHO` with `MACROPAD:V1`; sends `KEY:1`–`KEY:12`,
-  `ENC1:CW|CCW|PRESS`, `ENC2:CW|CCW|PRESS`.
+Until then, everything needed to write compatible firmware is documented in the main
+[README](../README.md#firmware): the wiring map, the handshake (`WHO` → `MACROPAD:V1`) and
+the event messages (`KEY:1`–`KEY:12`, `ENC1:CW|CCW|PRESS`, `ENC2:CW|CCW|PRESS`).
 
-## Current wiring (confirmed)
+## Summary
 
-Matrix columns: C1 GPIO8, C2 GPIO2, C3 GPIO1, C4 GPIO0
-Rows: R1 GPIO10 (K1–K4), R2 GPIO20 (K5–K8), R3 GPIO21 (K9–K12), R4 GPIO7 (encoder clicks)
+- Board: ESP32-C3 with native USB, PlatformIO board `esp32-c3-devkitm-1`, Arduino framework.
+- USB CDC serial at 115200 baud. Not a USB keyboard (HID): the desktop app performs the actions.
+- Keys: 4 × 4 matrix. Rows GPIO10, GPIO20, GPIO21 (keys) and GPIO7 (knob clicks); columns
+  GPIO8, GPIO2, GPIO1, GPIO0.
+- Knobs: left encoder GPIO5 + GPIO6, right encoder GPIO3 + GPIO4, common to GND.
+- Status: V1, frozen. All 18 inputs verified, including stress tests and simultaneous presses.
 
-- Left encoder: rotation GPIO5 + GPIO6 (common to GND), click GPIO7 + GPIO8
-- Right encoder: rotation GPIO3 + GPIO4 (common to GND), click GPIO7 + GPIO0
+## Building and flashing (once the source is here)
 
-Picture: [`../docs/hardware/wiring-current-matrix.jpeg`](../docs/hardware/wiring-current-matrix.jpeg).
-The seller's original one-key-per-GPIO wiring is **obsolete**; see `docs/hardware/historical/`.
+1. Install VS Code and the PlatformIO extension.
+2. Open this `firmware/` folder.
+3. Connect the pad by USB and click **PlatformIO: Upload**.
+4. Check it with the serial monitor at 115200 baud: type `WHO` and the pad answers
+   `MACROPAD:V1`; pressing keys prints `KEY:1` and so on.
+
+Wiring picture: [`../docs/hardware/wiring-current-matrix.jpeg`](../docs/hardware/wiring-current-matrix.jpeg).

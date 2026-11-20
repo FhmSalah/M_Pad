@@ -30,6 +30,8 @@ ArchitecturesInstallIn64BitMode=x64compatible
 OutputDir=..\..\dist
 OutputBaseFilename=MacroPad-Setup-{#AppVersion}
 SetupIconFile=..\..\assets\app_icon.ico
+; Shown as a page in the installer (GPL-3.0).
+LicenseFile=..\..\..\LICENSE
 UninstallDisplayIcon={app}\{#AppExe}
 UninstallDisplayName={#AppName}
 WizardStyle=modern
