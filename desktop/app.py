@@ -24,6 +24,10 @@ from foreground_app import (APPLICATION_NAME_ALIASES, MACOS_APPLICATION_ALIASES,
 from run_actions import ActionGate, run_engine
 from shortcut_keys import MEDIA_LABELS, action_label, resolve_action, shortcut_label
 from shortcut_recorder import ShortcutRecorder
+from single_instance import SingleInstance
+from tray import TrayIcon
+
+BACKGROUND_FLAG = "--background"  # Start hidden in the tray (used by start-at-login).
 
 try:
     from PySide6.QtMultimedia import QSoundEffect
@@ -701,6 +705,8 @@ class MacroPadWindow(QWidget):
         self.store = store if store is not None else ConfigStore()
         self.gate = ActionGate()
         self.closing = False
+        self.quit_requested = False
+        self.tray = None
         self.loading = False
         self.dirty = False
         self.selected_control = "KEY:1"
@@ -1116,6 +1122,8 @@ class MacroPadWindow(QWidget):
         self.profile_button.setText(self.profile_button.fontMetrics().elidedText(active, Qt.TextElideMode.ElideRight, available))
         self.profile_button.setIcon(lock_icon() if locked else QIcon())
         self.profile_button.setToolTip(f"{active} (locked)" if locked else active)
+        if self.tray is not None:
+            self.tray.set_profile(active)
         if changed:
             self.pad_widget.clear_activity()
             self.load_assignment()
@@ -1409,6 +1417,48 @@ class MacroPadWindow(QWidget):
     def worker_finished(self):
         if self.closing:
             self.close()
+            if self.quit_requested:
+                QApplication.quit()
+
+    def attach_tray(self, tray):
+        """Run from the tray: closing the window hides it; Quit is in the tray menu."""
+        self.tray = tray
+        tray.open_requested.connect(self.show_from_tray)
+        tray.quit_requested.connect(self.request_quit)
+        self.worker.connection_changed.connect(tray.set_connection)
+        tray.set_connection(self.pad_widget.connected)
+        tray.set_profile(self.store.current_profile())
+        tray.show()
+
+    @Slot()
+    def show_from_tray(self):
+        if self.closing:
+            return
+        self.showNormal()
+        self.raise_()
+        self.activateWindow()
+        if sys.platform == "darwin":
+            # Menu-bar apps have no Dock icon, so bring the app itself forward.
+            try:
+                from AppKit import NSApp
+                NSApp.activateIgnoringOtherApps_(True)
+            except Exception:
+                pass
+
+    def hide_to_tray(self):
+        self.stop_easter_egg()
+        self.pad_widget.clear_activity()
+        self.recorder.finish()
+        self.hide()
+        self.tray.show_hidden_hint()
+
+    @Slot()
+    def request_quit(self):
+        """Really quit: stop the engine, then leave the event loop."""
+        self.quit_requested = True
+        self.close()  # Starts the engine shutdown; worker_finished() then quits.
+        if not self.worker.isRunning():
+            QApplication.quit()
 
     def reconcile_foreground_profile(self):
         if self.foreground_monitor is not None:
@@ -1423,6 +1473,9 @@ class MacroPadWindow(QWidget):
         if self.recorder.active and self.recorder.candidate == ["alt", "f4"]:
             # A system close request caused by the shortcut being recorded.
             event.ignore()
+        elif self.tray is not None and not self.quit_requested:
+            event.ignore()
+            self.hide_to_tray()
         elif self.worker.isRunning():
             self.stop_foreground_monitor()
             self.stop_easter_egg()
@@ -1453,13 +1506,32 @@ class MacroPadWindow(QWidget):
 def main():
     app = QApplication(sys.argv)
     app.setApplicationName(application_name())
-    app.setWindowIcon(QIcon(resource_path("assets/app_icon.png")))
+    icon = QIcon(resource_path("assets/app_icon.png"))
+    app.setWindowIcon(icon)
+
+    instance = SingleInstance(application_name())
+    if not instance.acquire():
+        # Already running: bring that copy's window up instead of starting another.
+        instance.notify_running()
+        return 0
+    instance.listen()
+
     window = MacroPadWindow()
-    window.show()
+    tray = None
+    if TrayIcon.available():
+        tray = TrayIcon(icon, application_name(), window)
+        window.attach_tray(tray)
+        app.setQuitOnLastWindowClosed(False)
+    instance.activation_requested.connect(window.show_from_tray if tray else window.showNormal)
+    if tray is None or BACKGROUND_FLAG not in sys.argv[1:]:
+        window.show()
 
     try:
         exit_code = app.exec()
     finally:
+        if tray is not None:
+            tray.hide()
+        instance.release()
         window.stop_foreground_monitor()
         window.worker.stop.set()
         window.recorder.finish()

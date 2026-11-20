@@ -11,10 +11,21 @@ One Python / PySide6 code base for both platforms.
 | `detect_device.py` | Finds the pad on serial ports via the `WHO` handshake |
 | `shortcut_keys.py`, `shortcut_recorder.py` | Key names, shortcut recording |
 | `app_paths.py` | Where the config lives on each platform |
+| `tray.py` | Tray / menu-bar icon with Open and Quit |
+| `single_instance.py` | Keeps one running copy; a second launch opens the first copy's window |
 | `MacroPad.spec` / `build_windows.ps1` | Windows build (PyInstaller, one-folder) |
 | `MacroPad-macOS.spec` | macOS build (PyInstaller `.app`, arm64) |
 
-Only run one copy of the app (or the CLI) at a time, because they share the serial port.
+## Running in the background
+
+- The app lives in the tray (Windows notification area / macOS menu bar). There's no Dock
+  icon in the macOS build.
+- Closing the window hides it; the pad keeps working. Double-click the tray icon (Windows)
+  or use its menu → **Open** to show it again. **Quit** in the tray menu stops the app.
+- Launching the app again while it's running only opens the existing window.
+- `app.py --background` starts hidden in the tray (used by start-at-login).
+
+Don't run the CLI (`run_actions.py`) while the app is running, because they share the serial port.
 
 ## Config location
 

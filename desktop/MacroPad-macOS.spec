@@ -65,4 +65,6 @@ app = BUNDLE(
     name="Macro Pad.app",
     icon=str(project / "assets" / "app_icon.icns"),
     bundle_identifier="com.macropad.desktop",
+    # Menu-bar app: no Dock icon; the window opens from the menu-bar icon.
+    info_plist={"LSUIElement": True},
 )

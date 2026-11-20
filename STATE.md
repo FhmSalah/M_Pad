@@ -21,8 +21,8 @@ conflict. Update it at the end of every work session.
 | Hardware | Done. 12 keys + 2 encoders + 2 encoder clicks, all 18 events verified |
 | Firmware | Frozen V1. Source is on the Mac, **not in this repo yet** |
 | macOS app | Installed at `/Applications/Macro Pad.app`, working (2026-10-11) |
-| Windows app | Rebuilt from the shared source 2026-11-17, tested by user with the pad, working |
-| Source | `desktop/`, one tree for both platforms. 162 tests pass on Windows (14 Mac-only skipped) |
+| Windows app | Tray version built 2026-11-20 and smoke-tested; installed at `D:\Desktop\Make MP APP\Macro Pad\` |
+| Source | `desktop/`, one tree for both platforms. 176 tests pass on Windows (14 Mac-only skipped) |
 
 ## Open-source plan (started 2026-11-20)
 
@@ -30,7 +30,17 @@ Goal: publish the project so others can build and use it. Steps, in order:
 
 1. **Clean up**: done 2026-11-20. Unused assets removed, the design mockup moved to
    `docs/design/`, the old project copies sent to the Recycle Bin or archived in `Backups\older\`.
-2. Run in the background: tray icon (Open / Quit), close hides to the tray, desktop shortcut.
+2. **Run in the background**: done 2026-11-20 (Windows tested, macOS untested).
+   - `tray.py`: tray / menu-bar icon. Double-click opens the window (Windows); the menu
+     has Open and Quit. The tooltip shows the connection and the profile.
+   - Closing the window hides it to the tray; only **Quit** stops the app.
+   - `single_instance.py`: one copy per user. Launching again just opens the running
+     copy's window, because two copies would fight over the serial port.
+   - `--background` starts the app hidden in the tray (for step 3).
+   - macOS build: `LSUIElement` in `MacroPad-macOS.spec`, so there's no Dock icon.
+     **Check on a Mac**: the menu-bar icon, the window coming to the front, and Quit.
+   - Windows desktop shortcut `D:\Desktop\Macro Pad.lnk` made by hand for now; the
+     installer (step 4) will create it properly.
 3. Start automatically at login on Windows and macOS, with an on/off option in the app.
 4. Installers: a Windows setup `.exe` and a macOS download.
 5. Plan the demo video for the project presentation.
@@ -67,9 +77,9 @@ Before relying on them there, run the tests on the Mac and rebuild the `.app` (s
 | What | Where |
 |---|---|
 | This repo (private) | https://github.com/FhmSalah/M_Pad (local clone on Windows: `D:\Desktop\Make MP APP\macro-pad`) |
-| Windows packaged app (current) | `D:\Desktop\Make MP APP\MacroPad-Desktop 2\release\Macro Pad\` (exe + `config.json` beside it) |
+| Windows packaged app (current) | `D:\Desktop\Make MP APP\Macro Pad\` (exe + `config.json` beside it); desktop shortcut `D:\Desktop\Macro Pad.lnk` |
 | Windows live config | `config.json` next to `Macro Pad.exe` |
-| Windows backups | `D:\Desktop\Make MP APP\Backups\2026-11-17_20-19-02\` (old release, configs, Mac source) |
+| Windows backups | `D:\Desktop\Make MP APP\Backups\2026-11-17_20-19-02\` (old release, configs, Mac source); `...\Backups\2026-11-20_before-tray-version\` (previous release + config) |
 | Older snapshots | `D:\Desktop\Make MP APP\Backups\older\` (old Windows source zip, Mac source zips, old notes, wiring images) |
 | Windows dev environment | `desktop\.venv-win\` inside this repo (git-ignored; recreate with the Quick start steps) |
 | Mac installed app | `/Applications/Macro Pad.app` |
