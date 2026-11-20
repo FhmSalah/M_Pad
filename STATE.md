@@ -23,7 +23,7 @@ Status, decisions and to-dos for anyone working on the code. User docs are in
 | Firmware | V1, frozen. Source in `firmware/` (PlatformIO); builds cleanly (4% RAM, 19% flash) |
 | Windows app | 1.0.0, tested: tray, start at login, installer (install, upgrade, uninstall) |
 | macOS app | 1.0.0, tested on macOS 15 (Apple Silicon) on 2026-11-20: `.dmg` build and drag-install, menu-bar mode (no Dock icon), keys and knobs, close-to-menu-bar and Open, start at login, automatic profiles (Finder → Brave → Finder). **Not tested:** first-run starter config (an existing config was kept), Intel Macs |
-| Tests | 206 pass on Windows (14 Mac-only tests skip there). On macOS: 199 pass, 7 fail (see Known issues) |
+| Tests | 206 pass on Windows (14 Mac-only tests skip there) and on macOS (6 Windows-only tests skip there) |
 | Published | Public on GitHub since 2026-11-20 (GPL-3.0); release v1.0.0 with the Windows installer and the macOS `.dmg` |
 
 ## How it fits together
@@ -64,23 +64,11 @@ Status, decisions and to-dos for anyone working on the code. User docs are in
 
 ## Next steps
 
-1. **Fix the 7 macOS test failures** (see Known issues), checking `--quit` first.
-2. Record the demo video (`docs/presentation/demo-video-plan.md`) and link it from the README.
+1. Record the demo video (`docs/presentation/demo-video-plan.md`) and link it from the README.
 
 ## Known issues
 
-- **7 tests fail on macOS** (2026-11-20, `QT_QPA_PLATFORM=offscreen`, unittest):
-  - `test_install_support`: `test_quit_closes_a_running_copy` (`AssertionError: 1 != 0`) and
-    `test_wait_for_exit` (`AssertionError: False is not true`). These cover `--quit` (used by
-    installers to close a running copy). Quit wasn't part of the manual Mac checks: check it first.
-  - `test_ui_polish.test_app_naming_and_resource_icon`: `'Macro Pad DEV' != 'Macro Pad'`.
-  - `test_v1_audit.test_config_path_source_and_frozen_ignore_working_directory`: expects
-    `desktop/config.json`, gets `~/Library/Application Support/Macro Pad DEV/config.json`.
-  - `test_v1_editor`: `test_editor_follows_active_profile_and_save_is_live` and
-    `test_recorder_waits_for_releases_and_ignores_repeat` expect `ctrl` where macOS records
-    `cmd`; `test_supported_key_names_and_invalid_entries` rejects `insert`.
-  - The last five look like tests that assume Windows, not app bugs.
-
+- On macOS a mapping that uses `insert` does nothing (Macs have no Insert key).
 - The full test run can exit with a Qt crash (code 139) **after** all results print.
   It's a test-teardown quirk, not an app bug.
 - Builds are unsigned: Windows SmartScreen and macOS Gatekeeper warn on first launch.

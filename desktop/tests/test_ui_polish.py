@@ -59,8 +59,10 @@ class PolishTests(unittest.TestCase):
 
     def test_app_naming_and_resource_icon(self):
         window = self.window()
-        self.assertEqual(window.windowTitle(), "Macro Pad")
-        self.assertEqual(window.findChild(QLabel, "title").text(), "Macro Pad")
+        # Source runs on macOS are "Macro Pad DEV" so they never share the installed app's settings.
+        expected_name = "Macro Pad DEV" if sys.platform == "darwin" else "Macro Pad"
+        self.assertEqual(window.windowTitle(), expected_name)
+        self.assertEqual(window.findChild(QLabel, "title").text(), expected_name)
         expected = QIcon(gui.resource_path("assets/app_icon.png"))
         self.assertFalse(expected.isNull())
         self.assertEqual(window.windowIcon().pixmap(32, 32).toImage(), expected.pixmap(32, 32).toImage())

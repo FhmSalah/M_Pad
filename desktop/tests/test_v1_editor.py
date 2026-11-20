@@ -29,6 +29,9 @@ from shortcut_keys import (
 from shortcut_recorder import ShortcutRecorder, event_key_name
 
 
+# Qt's Control key is the Command key on macOS, so record_ctrl_shift_s() records Shift+Cmd+S there.
+CTRL_SHIFT_S = ["shift", "cmd", "s"] if sys.platform == "darwin" else ["ctrl", "shift", "s"]
+
 class FakeKeyboard:
     def __init__(self):
         self.presses = []
@@ -156,6 +159,10 @@ class EditorTests(unittest.TestCase):
 
     def test_supported_key_names_and_invalid_entries(self):
         for name in (*SPECIAL_NAMES, *PUNCTUATION, *"abcdefghijklmnopqrstuvwxyz0123456789"):
+            if name == "insert" and sys.platform == "darwin":
+                # Macs have no Insert key (pynput has none there): such a mapping does nothing.
+                self.assertIsNone(resolve_key(name))
+                continue
             self.assertIsNotNone(resolve_key(name), name)
         self.assertIsNotNone(resolve_action({"type": "media_key", "key": "volume_mute"}))
         for action in (None, [], {"type": "script"}, {"type": "hotkey", "keys": []},
@@ -169,7 +176,7 @@ class EditorTests(unittest.TestCase):
         captured = []
         recorder.recorded.connect(captured.append)
         self.record_ctrl_shift_s(recorder)
-        self.assertEqual(captured, [["ctrl", "shift", "s"]])
+        self.assertEqual(captured, [CTRL_SHIFT_S])
         self.assertEqual(recorder.held, set())
         recorder.start()
         self.key_event(recorder, Qt.Key.Key_A)
@@ -217,7 +224,7 @@ class EditorTests(unittest.TestCase):
         self.record_ctrl_shift_s(window.recorder)
         self.assertFalse(window.gate.snapshot()[0])
         window.save_assignment()
-        self.assertEqual(self.store.mapping("Browser", "KEY:1")["keys"], ["ctrl", "shift", "s"])
+        self.assertEqual(self.store.mapping("Browser", "KEY:1")["keys"], CTRL_SHIFT_S)
         self.assertEqual(self.store.mapping("General", "KEY:1"),
                          self.original["profiles"]["General"]["KEY:1"])
         window.choose_profile("Browser")

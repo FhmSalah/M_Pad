@@ -35,10 +35,16 @@ class AuditTests(unittest.TestCase):
             previous = os.getcwd()
             try:
                 os.chdir(directory)
-                with patch.object(sys, "frozen", False, create=True):
+                with patch.object(sys, "frozen", False, create=True), \
+                     patch.object(sys, "platform", "win32"):
                     self.assertEqual(app_paths.config_path(),
                                      Path(app_paths.__file__).resolve().parent / "config.json")
-                executable = Path(directory) / "Macro Pad.exe"
+                with patch.object(sys, "frozen", False, create=True), \
+                     patch.object(sys, "platform", "darwin"):
+                    # macOS source runs use their own "Macro Pad DEV" settings folder.
+                    self.assertEqual(app_paths.config_path(), Path.home() / "Library" / "Application Support"
+                                     / "Macro Pad DEV" / "config.json")
+                executable = Path(directory).resolve() / "Macro Pad.exe"  # macOS: /var -> /private/var
                 app_data = Path(directory) / "AppData"
                 with patch.object(sys, "frozen", True, create=True), \
                      patch.object(sys, "platform", "win32"), \

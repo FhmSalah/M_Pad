@@ -54,6 +54,13 @@ def wait_for_exit(pid, timeout_s):
     deadline = time.monotonic() + timeout_s
     while True:
         try:
+            # If `pid` is our own child, collect it once it ends: otherwise it stays listed as
+            # a zombie and os.kill() keeps finding it. ChildProcessError: not our child.
+            if os.waitpid(pid, os.WNOHANG)[0] == pid:
+                return True
+        except ChildProcessError:
+            pass
+        try:
             os.kill(pid, 0)
         except ProcessLookupError:
             return True
