@@ -1,5 +1,8 @@
 # Finishing the macOS side
 
+> **Using an AI assistant (e.g. Claude Code) on the Mac?** Read the
+> [rules for the assistant](#rules-for-an-ai-assistant-on-the-mac) at the end first.
+
 Three things can only be done on the Mac:
 
 1. **Build the macOS download** (`MacroPad-1.0.0-macOS.dmg`). A Mac app can only be built on a Mac.
@@ -83,3 +86,38 @@ next to the project folder:
 
 Then ask Claude on Windows to finish: upload the `.dmg` to the release, commit the firmware,
 and update the README and roadmap.
+
+## Rules for an AI assistant on the Mac
+
+Context: the project owner did all the Windows work (tray mode, start at login, installers,
+open-source release v1.0.0) with Claude Code on a Windows PC. Read `STATE.md` (status and
+design) and this guide, then work through steps 1–4 above **one step at a time**,
+confirming with the owner before each step that changes something outside the repo.
+
+Must:
+- Commit only as `FhmSalah <330160166+FhmSalah@users.noreply.github.com>` (set it with the
+  `git config` lines in step 1 before any commit). Never put a personal email, real name,
+  or personal file paths (e.g. `/Users/<name>/...`) into tracked files or commit messages:
+  the repo is public.
+- Treat the firmware as **frozen**: copy the existing PlatformIO project into `firmware/`
+  without changing its code, and never flash the pad. Leave out `.pio/` and `.vscode/`.
+  Before committing, check it for Wi-Fi passwords, keys or tokens.
+- Never overwrite or delete `~/Library/Application Support/Macro Pad/config.json` (the
+  owner's real mappings) or `.../Macro Pad DEV/config.json`. The new app reads the
+  existing file as is.
+- Before replacing `/Applications/Macro Pad.app`, make a dated backup copy of it (e.g. in
+  `~/Desktop/Macro-Pad-Backups/`) and quit the running app.
+- Don't push or upload until the owner has tested the new app (step 3) and agreed.
+
+Publishing (step 4), once agreed:
+1. `gh release upload v1.0.0 desktop/dist/MacroPad-1.0.0-macOS.dmg` (GitHub CLI; the owner
+   signs in with `gh auth login --web`, entering the one-time code shown in Terminal).
+2. Commit the firmware: "Add the ESP32-C3 firmware source".
+3. Update the docs so nothing claims more than is true: the README roadmap and status lines,
+   the README Install section, `firmware/README.md` (now: how to build and flash),
+   `docs/release-notes/v1.0.0.md` (add the `.dmg` and its SHA-256, then
+   `gh release edit v1.0.0 --notes-file docs/release-notes/v1.0.0.md`), and `STATE.md`
+   (what was tested on macOS, what wasn't).
+4. Report anything that failed on macOS with the exact error, so it can be fixed in the
+   shared code (`desktop/`). Platform-specific code goes behind `sys.platform` checks;
+   never fork a Mac-only copy.
