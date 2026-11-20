@@ -1,6 +1,6 @@
 # Macro Pad — current state
 
-**Last updated:** 2026-11-17
+**Last updated:** 2026-11-20
 **Milestone:** V1 complete on macOS and Windows, from a single shared source tree.
 
 This file replaces `docs/history/CURRENT-STATE-V1-FINAL-2026-10-11.txt` wherever they
@@ -24,7 +24,20 @@ conflict. Update it at the end of every work session.
 | Windows app | Rebuilt from the shared source 2026-11-17, tested by user with the pad, working |
 | Source | `desktop/`, one tree for both platforms. 162 tests pass on Windows (14 Mac-only skipped) |
 
-## What was done last (2026-11-17, on Windows)
+## Open-source plan (started 2026-11-20)
+
+Goal: publish the project so others can build and use it. Steps, in order:
+
+1. **Clean up**: done 2026-11-20. Unused assets removed, the design mockup moved to
+   `docs/design/`, the old project copies sent to the Recycle Bin or archived in `Backups\older\`.
+2. Run in the background: tray icon (Open / Quit), close hides to the tray, desktop shortcut.
+3. Start automatically at login on Windows and macOS, with an on/off option in the app.
+4. Installers: a Windows setup `.exe` and a macOS download.
+5. Plan the demo video for the project presentation.
+6. Publish on GitHub as open source, with a full README (wiring, firmware, protocol,
+   setup, roadmap). Review `docs/history/` for personal paths before going public.
+
+## Earlier: Windows port (2026-11-17)
 
 Ported the final Mac source to Windows; the Mac source became the single shared tree:
 
@@ -57,6 +70,8 @@ Before relying on them there, run the tests on the Mac and rebuild the `.app` (s
 | Windows packaged app (current) | `D:\Desktop\Make MP APP\MacroPad-Desktop 2\release\Macro Pad\` (exe + `config.json` beside it) |
 | Windows live config | `config.json` next to `Macro Pad.exe` |
 | Windows backups | `D:\Desktop\Make MP APP\Backups\2026-11-17_20-19-02\` (old release, configs, Mac source) |
+| Older snapshots | `D:\Desktop\Make MP APP\Backups\older\` (old Windows source zip, Mac source zips, old notes, wiring images) |
+| Windows dev environment | `desktop\.venv-win\` inside this repo (git-ignored; recreate with the Quick start steps) |
 | Mac installed app | `/Applications/Macro Pad.app` |
 | Mac live configs | `~/Library/Application Support/Macro Pad/config.json` (real), `.../Macro Pad DEV/config.json` (source runs) |
 | Mac backups | `~/Desktop/Macro-Pad-Backups/2026-10-11_00-29-14_426008+0000/` |
