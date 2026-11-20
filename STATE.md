@@ -20,7 +20,7 @@ Status, decisions and to-dos for anyone working on the code. User docs are in
 | Part | Status |
 |---|---|
 | Hardware | Done. All 18 inputs (12 keys, 4 knob turns, 2 knob clicks) verified |
-| Firmware | V1, frozen. **Source not in the repo yet** (to be added to `firmware/`) |
+| Firmware | V1, frozen. Source in `firmware/` (PlatformIO); builds cleanly (4% RAM, 19% flash) |
 | Windows app | 1.0.0, tested: tray, start at login, installer (install, upgrade, uninstall) |
 | macOS app | Used daily as of Oct 2026. **Not yet tested on a Mac:** tray/menu-bar mode, start at login, `build_macos.sh`, first-run starter config |
 | Tests | 206 pass on Windows (14 Mac-only tests skip there) |
@@ -64,9 +64,8 @@ Status, decisions and to-dos for anyone working on the code. User docs are in
 
 ## Next steps
 
-0. **On the Mac:** follow `docs/finish-on-mac.md`; `tools/finish_on_mac.sh` does steps 1–2
-   (copies the firmware, runs tests, builds the `.dmg`).
-1. **Add the firmware source** to `firmware/` (PlatformIO project, without `.pio/`).
+1. **On the Mac:** follow `docs/finish-on-mac.md`; `tools/finish_on_mac.sh` runs the tests
+   and builds the `.dmg`.
 2. **Test on a Mac:** run the tests, run from source, then `./build_macos.sh` and check
    the drag-install, Open Anyway, Accessibility, menu bar, start at login, the first-run
    starter config, and automatic profiles (Finder → Brave → Finder gives General → Browser → General).

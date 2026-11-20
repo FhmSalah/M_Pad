@@ -77,7 +77,7 @@ login and a Windows installer, and the project went open source on GitHub.
 
 ## What's next
 
-See the [roadmap](../README.md#roadmap): firmware source in this repo, a macOS download,
+See the [roadmap](../README.md#roadmap): a macOS download,
 then V1.5 (Fn layer, knob modifiers, tap vs hold) and V2 (Bluetooth, battery, combos, a new
 case).
 

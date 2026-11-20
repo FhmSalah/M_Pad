@@ -1,0 +1,262 @@
+#include <Arduino.h>
+
+// =====================================================
+// MACRO PAD — COMBINED INPUT TEST
+// =====================================================
+
+// 12-key matrix
+const int keyRows[3] = {10, 20, 21};
+const int cols[4] = {8, 2, 1, 0};
+
+// Encoder click row
+const int clickRow = 7;
+
+// Encoder rotation pins
+const int ENC1_A = 5;
+const int ENC1_B = 6;
+
+const int ENC2_A = 3;
+const int ENC2_B = 4;
+
+// -----------------------------------------------------
+// Debouncing
+// -----------------------------------------------------
+
+struct DebouncedSwitch {
+  bool rawState = false;
+  bool stableState = false;
+  unsigned long changedAt = 0;
+};
+
+DebouncedSwitch keys[3][4];
+DebouncedSwitch encoderClicks[2];
+
+const unsigned long DEBOUNCE_MS = 15;
+
+// -----------------------------------------------------
+// Encoder decoding
+// -----------------------------------------------------
+
+int enc1LastState;
+int enc2LastState;
+
+int enc1Accumulator = 0;
+int enc2Accumulator = 0;
+
+const int8_t transitionTable[16] = {
+   0, -1,  1,  0,
+   1,  0,  0, -1,
+  -1,  0,  0,  1,
+   0,  1, -1,  0
+};
+
+
+// =====================================================
+// SWITCH DEBOUNCE
+// =====================================================
+
+bool updateSwitch(DebouncedSwitch &sw, bool newRawState) {
+
+  unsigned long now = millis();
+
+  if (newRawState != sw.rawState) {
+    sw.rawState = newRawState;
+    sw.changedAt = now;
+  }
+
+  if (
+    sw.stableState != sw.rawState &&
+    now - sw.changedAt >= DEBOUNCE_MS
+  ) {
+    sw.stableState = sw.rawState;
+
+    // Return true only when pressed.
+    if (sw.stableState) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+
+// =====================================================
+// MATRIX
+// =====================================================
+
+void scanMatrix() {
+
+  // -----------------------------
+  // 12 normal keys
+  // -----------------------------
+
+  for (int r = 0; r < 3; r++) {
+
+    digitalWrite(keyRows[r], LOW);
+    pinMode(keyRows[r], OUTPUT);
+
+    delayMicroseconds(50);
+
+    for (int c = 0; c < 4; c++) {
+
+      bool pressed = (digitalRead(cols[c]) == LOW);
+
+      if (updateSwitch(keys[r][c], pressed)) {
+
+        int keyNumber = (r * 4) + c + 1;
+
+        Serial.print("KEY:");
+        Serial.println(keyNumber);
+      }
+    }
+
+    pinMode(keyRows[r], INPUT);
+  }
+
+
+  // -----------------------------
+  // Encoder clicks
+  // -----------------------------
+
+  digitalWrite(clickRow, LOW);
+  pinMode(clickRow, OUTPUT);
+
+  delayMicroseconds(50);
+
+  bool leftPressed = (digitalRead(8) == LOW);
+  bool rightPressed = (digitalRead(0) == LOW);
+
+  if (updateSwitch(encoderClicks[0], leftPressed)) {
+    Serial.println("ENC1:PRESS");
+  }
+
+  if (updateSwitch(encoderClicks[1], rightPressed)) {
+    Serial.println("ENC2:PRESS");
+  }
+
+  pinMode(clickRow, INPUT);
+}
+
+
+// =====================================================
+// ENCODER 1
+// =====================================================
+
+void scanEncoder1() {
+
+  int currentState =
+    (digitalRead(ENC1_A) << 1) |
+     digitalRead(ENC1_B);
+
+  if (currentState == enc1LastState) {
+    return;
+  }
+
+  int transition =
+    (enc1LastState << 2) |
+     currentState;
+
+  enc1Accumulator += transitionTable[transition];
+
+  enc1LastState = currentState;
+
+  // Our electrical orientation was confirmed:
+  // negative = physical clockwise
+
+  if (enc1Accumulator <= -4) {
+    Serial.println("ENC1:CW");
+    enc1Accumulator = 0;
+  }
+
+  else if (enc1Accumulator >= 4) {
+    Serial.println("ENC1:CCW");
+    enc1Accumulator = 0;
+  }
+}
+
+
+// =====================================================
+// ENCODER 2
+// =====================================================
+
+void scanEncoder2() {
+
+  int currentState =
+    (digitalRead(ENC2_A) << 1) |
+     digitalRead(ENC2_B);
+
+  if (currentState == enc2LastState) {
+    return;
+  }
+
+  int transition =
+    (enc2LastState << 2) |
+     currentState;
+
+  enc2Accumulator += transitionTable[transition];
+
+  enc2LastState = currentState;
+
+  if (enc2Accumulator <= -4) {
+    Serial.println("ENC2:CW");
+    enc2Accumulator = 0;
+  }
+
+  else if (enc2Accumulator >= 4) {
+    Serial.println("ENC2:CCW");
+    enc2Accumulator = 0;
+  }
+}
+
+
+// =====================================================
+// SETUP
+// =====================================================
+
+void setup() {
+
+  Serial.begin(115200);
+  delay(1500);
+
+  // Matrix columns
+  for (int c = 0; c < 4; c++) {
+    pinMode(cols[c], INPUT_PULLUP);
+  }
+
+  // Matrix rows
+  for (int r = 0; r < 3; r++) {
+    pinMode(keyRows[r], INPUT);
+  }
+
+  pinMode(clickRow, INPUT);
+
+  // Encoders
+  pinMode(ENC1_A, INPUT_PULLUP);
+  pinMode(ENC1_B, INPUT_PULLUP);
+
+  pinMode(ENC2_A, INPUT_PULLUP);
+  pinMode(ENC2_B, INPUT_PULLUP);
+
+  enc1LastState =
+    (digitalRead(ENC1_A) << 1) |
+     digitalRead(ENC1_B);
+
+  enc2LastState =
+    (digitalRead(ENC2_A) << 1) |
+     digitalRead(ENC2_B);
+
+  Serial.println("READY");
+}
+
+
+// =====================================================
+// MAIN LOOP
+// =====================================================
+
+void loop() {
+
+  scanMatrix();
+
+  scanEncoder1();
+  scanEncoder2();
+}

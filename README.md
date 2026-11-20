@@ -17,8 +17,7 @@ Macro Pad  ──USB serial──▶  desktop app  ──▶  shortcuts · media
 
 **Status:** V1, stable. The Windows app and installer are tested. The macOS app has been
 used daily, but the newest features (tray mode, start at login, `.dmg`) haven't been tested
-on a Mac yet. The firmware source will be added soon; the protocol and wiring below are
-complete.
+on a Mac yet. The firmware source, wiring map and protocol are all in this repo.
 
 ## Contents
 
@@ -137,10 +136,12 @@ use it**.
 - **Behaviour:** scans the matrix, debounces every key, reads both encoders on their detents,
   and sends one line per event (see below).
 - **Verified:** all 18 inputs, 20-press stress tests, simultaneous key + knob presses.
-- **Source:** coming soon in [`firmware/`](firmware/). In the meantime, any firmware that
-  follows the message format below works with the app.
+- **Source:** [`firmware/`](firmware/). All pins and timings are in one file,
+  [`hardware_config.h`](firmware/src/hardware_config.h). Any firmware that follows the
+  message format below works with the app.
 
-Flash with PlatformIO: open `firmware/` in VS Code → PlatformIO → **Upload**.
+Flash with PlatformIO: open `firmware/` in VS Code → PlatformIO → **Upload**. Step-by-step
+instructions are in [`firmware/README.md`](firmware/README.md).
 
 ## Message format (pad ↔ app)
 
@@ -162,6 +163,7 @@ accepted too).
 | `ENC1:CW` / `ENC1:CCW` | Left knob turned one step clockwise / counter-clockwise |
 | `ENC2:CW` / `ENC2:CCW` | Right knob turned one step |
 | `ENC1:PRESS` / `ENC2:PRESS` | Knob clicked |
+| `READY` | Sent once at start-up (ignored by the app) |
 
 Rules:
 - A line is one event, sent when the key goes **down** (there's no release message).
@@ -204,7 +206,7 @@ Tests: `cd desktop/tests` then `python -m unittest discover -s .` with
 | Path | What it is |
 |---|---|
 | [`desktop/`](desktop/) | The desktop app (Python, PySide6): one code base for Windows and macOS, with tests and installers |
-| [`firmware/`](firmware/) | ESP32-C3 firmware (source coming soon) |
+| [`firmware/`](firmware/) | ESP32-C3 firmware (PlatformIO project) |
 | [`docs/hardware/`](docs/hardware/) | Wiring pictures |
 | [`docs/design/`](docs/design/) | The original UI design mockup |
 | [`docs/journey.md`](docs/journey.md) | The project journey, with photos |
@@ -215,9 +217,9 @@ Tests: `cd desktop/tests` then `python -m unittest discover -s .` with
 
 - [x] **V1:** 12 keys, 2 knobs with clicks, profiles, automatic profiles, Windows + macOS
 - [x] Tray mode, start at login, Windows installer (`MacroPad-Setup-1.0.0.exe`)
+- [x] Firmware source in this repo
 - [ ] macOS download (`.dmg`): build script ready, not yet built and tested on a Mac
       ([how to finish it](docs/finish-on-mac.md))
-- [ ] Firmware source in this repo
 - [ ] **V1.5:** Fn layer, knob modifiers (Fn + knob), tap vs hold
 - [ ] **V2:** Bluetooth and a battery for wireless use
 - [ ] **V2:** advanced key combos and a redesigned case
