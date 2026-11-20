@@ -39,10 +39,15 @@ class AuditTests(unittest.TestCase):
                     self.assertEqual(app_paths.config_path(),
                                      Path(app_paths.__file__).resolve().parent / "config.json")
                 executable = Path(directory) / "Macro Pad.exe"
+                app_data = Path(directory) / "AppData"
                 with patch.object(sys, "frozen", True, create=True), \
+                     patch.object(sys, "platform", "win32"), \
+                     patch.dict(os.environ, {"APPDATA": str(app_data)}), \
                      patch.object(sys, "executable", str(executable)), \
                      patch.object(sys, "_MEIPASS", str(Path(directory) / "_internal"), create=True):
-                    self.assertEqual(app_paths.config_path(), executable.parent / "config.json")
+                    # Installed builds keep per-user settings in %APPDATA%, never beside the exe.
+                    self.assertEqual(app_paths.config_path(), app_data / "Macro Pad" / "config.json")
+                    self.assertEqual(app_paths.legacy_config_path(), executable.parent / "config.json")
             finally:
                 os.chdir(previous)
 

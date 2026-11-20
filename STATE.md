@@ -21,8 +21,8 @@ conflict. Update it at the end of every work session.
 | Hardware | Done. 12 keys + 2 encoders + 2 encoder clicks, all 18 events verified |
 | Firmware | Frozen V1. Source is on the Mac, **not in this repo yet** |
 | macOS app | Installed at `/Applications/Macro Pad.app`, working (2026-10-11) |
-| Windows app | Tray + start-at-login version built 2026-11-20 and smoke-tested; installed at `D:\Desktop\Make MP APP\Macro Pad\`; start at login **on** |
-| Source | `desktop/`, one tree for both platforms. 192 tests pass on Windows (14 Mac-only skipped) |
+| Windows app | v1.0.0 installed with its own installer 2026-11-20 into `C:\Program Files\Macro Pad\`; start at login **on** |
+| Source | `desktop/`, one tree for both platforms. 206 tests pass on Windows (14 Mac-only skipped) |
 
 ## Open-source plan (started 2026-11-20)
 
@@ -57,13 +57,21 @@ Goal: publish the project so others can build and use it. Steps, in order:
      The exe itself is still in Downloads.
    - **Check on a Mac**: toggle on, log out and in, and confirm it appears under System
      Settings → General → Login Items.
-4. Installers: a Windows setup `.exe` and a macOS download. Things to handle:
-   - An installed app in Program Files can't write `config.json` beside the exe, so move
-     the Windows packaged config to `%APPDATA%\Macro Pad\` (copy the old file on first run).
-   - The app no longer quits when its window closes, so the installer must close it
-     (Quit or end the process) before replacing files.
-   - Offer "Start at login" and "Desktop shortcut" in the installer; the uninstaller must
-     remove the Run entry.
+4. **Installers**: Windows done and tested 2026-11-20; macOS script written but untested.
+   - Windows: `desktop\build_installer.ps1` → `dist\MacroPad-Setup-1.0.0.exe` (Inno Setup 6.7.3,
+     installed per user via winget). All users, `C:\Program Files\Macro Pad`, with
+     desktop-shortcut and start-at-login options. Tested on this PC: install, upgrade over
+     a running copy, uninstall (removes the login entry, keeps settings), reinstall.
+   - Settings moved: installed Windows builds use `%APPDATA%\Macro Pad\config.json`.
+     First run copies an old portable config, else writes the starter set
+     (`starter_config.py`). No config is bundled into builds any more.
+   - New flags: `--quit` (returns once the app has exited), `--enable-autostart`,
+     `--disable-autostart`.
+   - The old Downloads app had left an incompatible `%APPDATA%\Macro Pad\config.json`; it
+     was moved to Backups and replaced with the real config.
+   - macOS: `desktop/build_macos.sh` → `.app` + `.dmg` (ad-hoc signed, not notarized).
+     **Run it on the Mac** and test: drag-install, Open Anyway, Accessibility, menu bar,
+     start at login, first-run starter config.
 5. Plan the demo video for the project presentation.
 6. Publish on GitHub as open source, with a full README (wiring, firmware, protocol,
    setup, roadmap). Review `docs/history/` for personal paths before going public.
@@ -98,9 +106,10 @@ Before relying on them there, run the tests on the Mac and rebuild the `.app` (s
 | What | Where |
 |---|---|
 | This repo (private) | https://github.com/FhmSalah/M_Pad (local clone on Windows: `D:\Desktop\Make MP APP\macro-pad`) |
-| Windows packaged app (current) | `D:\Desktop\Make MP APP\Macro Pad\` (exe + `config.json` beside it); desktop shortcut `D:\Desktop\Macro Pad.lnk` |
-| Windows live config | `config.json` next to `Macro Pad.exe` |
-| Windows backups | `D:\Desktop\Make MP APP\Backups\2026-11-17_20-19-02\` (old release, configs, Mac source); `...\Backups\2026-11-20_before-tray-version\` (previous release + config) |
+| Windows installed app | `C:\Program Files\Macro Pad\` (installed with `MacroPad-Setup-1.0.0.exe`); shortcuts on the Public desktop and in the Start menu |
+| Windows live config | `%APPDATA%\Macro Pad\config.json` = `%USERPROFILE%\AppData\Roaming\Macro Pad\config.json` |
+| Windows installer output | `desktop\dist\MacroPad-Setup-<version>.exe` (git-ignored; attach to a GitHub Release) |
+| Windows backups | `D:\Desktop\Make MP APP\Backups\`: `2026-11-17_20-19-02\` (old release, configs, Mac source); `2026-11-20_before-tray-version\`, `2026-11-20_before-autostart-version\`, `2026-11-20_portable-before-installer\` (previous portable builds + configs); `2026-11-20_startup-entries\` (registry export); `2026-11-20_old-downloads-app-config\` (the old Downloads app's own config) |
 | Older snapshots | `D:\Desktop\Make MP APP\Backups\older\` (old Windows source zip, Mac source zips, old notes, wiring images) |
 | Windows dev environment | `desktop\.venv-win\` inside this repo (git-ignored; recreate with the Quick start steps) |
 | Mac installed app | `/Applications/Macro Pad.app` |

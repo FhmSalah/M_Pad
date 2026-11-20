@@ -27,7 +27,16 @@ There is **one** source tree for both platforms. Platform-specific code is
 selected at runtime with `sys.platform` checks; never fork a separate
 "Windows copy" or "Mac copy" again.
 
-## Quick start
+## Install
+
+- **Windows**: run `MacroPad-Setup-<version>.exe`. Build it with
+  `desktop\build_installer.ps1`; see [`desktop/README.md`](desktop/README.md).
+- **macOS**: open `MacroPad-<version>-macOS.dmg` and drag Macro Pad to Applications. Build
+  it with `desktop/build_macos.sh`.
+
+A new install starts with a ready-to-use set of mappings (General + Browser).
+
+## Run from source
 
 ### Windows
 
@@ -35,9 +44,11 @@ selected at runtime with `sys.platform` checks; never fork a separate
 cd desktop
 py -3.13 -m venv .venv-win
 .\.venv-win\Scripts\python.exe -m pip install -r requirements-build.txt
-copy ..\configs\windows-config.json config.json
 .\.venv-win\Scripts\python.exe app.py
 ```
+
+From source the app uses `desktop\config.json`, which is created on first run. To use your
+own mappings, copy them there first, e.g. `copy ..\configs\windows-config.json config.json`.
 
 ### macOS
 

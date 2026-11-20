@@ -12,6 +12,7 @@ from PySide6.QtCore import QDir, QLockFile, QObject, Signal, Slot
 from PySide6.QtNetwork import QLocalServer, QLocalSocket
 
 SHOW_MESSAGE = b"show\n"
+QUIT_MESSAGE = b"quit\n"  # Sent by `--quit` (the installer closes the running copy this way).
 
 
 def instance_name(app_name):
@@ -34,8 +35,38 @@ def allow_other_process_foreground():
         pass
 
 
+def wait_for_exit(pid, timeout_s):
+    """True once process `pid` has ended (or never existed)."""
+    if sys.platform == "win32":
+        import ctypes
+        SYNCHRONIZE, WAIT_TIMEOUT = 0x00100000, 0x00000102
+        kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+        kernel32.OpenProcess.restype = ctypes.c_void_p
+        handle = kernel32.OpenProcess(SYNCHRONIZE, False, pid)
+        if not handle:
+            return True  # Already gone.
+        try:
+            return kernel32.WaitForSingleObject(ctypes.c_void_p(handle), int(timeout_s * 1000)) != WAIT_TIMEOUT
+        finally:
+            kernel32.CloseHandle(ctypes.c_void_p(handle))
+    import os
+    import time
+    deadline = time.monotonic() + timeout_s
+    while True:
+        try:
+            os.kill(pid, 0)
+        except ProcessLookupError:
+            return True
+        except PermissionError:
+            pass  # Exists but belongs to someone else; keep waiting.
+        if time.monotonic() >= deadline:
+            return False
+        time.sleep(0.1)
+
+
 class SingleInstance(QObject):
     activation_requested = Signal()
+    quit_requested = Signal()
 
     def __init__(self, app_name, parent=None):
         super().__init__(parent)
@@ -51,14 +82,14 @@ class SingleInstance(QObject):
         # A crashed copy leaves a lock whose process is gone; Qt detects that here.
         return self.lock.removeStaleLockFile() and self.lock.tryLock(0)
 
-    def notify_running(self, timeout_ms=1000):
-        """Ask the running copy to show its window. True when it was reached."""
+    def notify_running(self, timeout_ms=1000, message=SHOW_MESSAGE):
+        """Send a message ("show" by default) to the running copy. True when it was reached."""
         socket = QLocalSocket()
         socket.connectToServer(self.name)
         if not socket.waitForConnected(timeout_ms):
             return False
         allow_other_process_foreground()
-        socket.write(SHOW_MESSAGE)
+        socket.write(message)
         socket.flush()
         socket.waitForBytesWritten(timeout_ms)
         socket.disconnectFromServer()
@@ -90,8 +121,32 @@ class SingleInstance(QObject):
             self.handle(connection)
 
     def handle(self, connection):
-        if SHOW_MESSAGE.strip() in bytes(connection.readAll()):
+        data = bytes(connection.readAll())
+        if QUIT_MESSAGE.strip() in data:
+            self.quit_requested.emit()
+        elif SHOW_MESSAGE.strip() in data:
             self.activation_requested.emit()
+
+    def running_pid(self):
+        """Process ID of the copy holding the lock (Qt writes it into the lock file)."""
+        try:
+            info = self.lock.getLockInfo()
+            pid = info[0] if isinstance(info, tuple) else None
+            return pid if isinstance(pid, int) and pid > 0 else None
+        except Exception:
+            return None
+
+    def wait_until_free(self, timeout_s=10.0, pid=None):
+        """After asking the running copy to quit: wait until it has really exited."""
+        import time
+        deadline = time.monotonic() + timeout_s
+        while not self.acquire():
+            if time.monotonic() >= deadline:
+                return False
+            time.sleep(0.1)
+        self.lock.unlock()
+        # The lock goes first; the process may still be finishing its shutdown.
+        return pid is None or wait_for_exit(pid, max(0.0, deadline - time.monotonic()))
 
     def release(self):
         if self.server is not None:

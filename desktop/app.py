@@ -17,7 +17,7 @@ from PySide6.QtWidgets import (
     QSizePolicy, QVBoxLayout, QWidget,
 )
 
-from app_paths import application_name
+from app_paths import application_name, ensure_config
 from config_store import ConfigStore, application_identifier, executable_identifier, label_event
 from foreground_app import (APPLICATION_NAME_ALIASES, MACOS_APPLICATION_ALIASES,
                            ActivationObserver, get_foreground_application, normalize_application_name)
@@ -25,7 +25,7 @@ from run_actions import ActionGate, run_engine
 from shortcut_keys import MEDIA_LABELS, action_label, resolve_action, shortcut_label
 from shortcut_recorder import ShortcutRecorder
 from autostart import BACKGROUND_FLAG, platform_autostart
-from single_instance import SingleInstance
+from single_instance import QUIT_MESSAGE, SingleInstance
 from tray import TrayIcon
 
 try:
@@ -1502,6 +1502,33 @@ class MacroPadWindow(QWidget):
                 pass
 
 
+QUIT_FLAG = "--quit"                       # Close a running copy cleanly (installer).
+ENABLE_AUTOSTART_FLAG = "--enable-autostart"    # Turn on start at login, then exit.
+DISABLE_AUTOSTART_FLAG = "--disable-autostart"  # Turn off start at login, then exit.
+
+
+def run_command(arguments, instance):
+    """Handle one-shot command-line flags without opening the app. None = start normally."""
+    if QUIT_FLAG in arguments:
+        if instance.acquire():
+            instance.release()
+            return 0  # Nothing running.
+        pid = instance.running_pid()
+        instance.notify_running(message=QUIT_MESSAGE)
+        return 0 if instance.wait_until_free(pid=pid) else 1
+    for flag, enabled in ((ENABLE_AUTOSTART_FLAG, True), (DISABLE_AUTOSTART_FLAG, False)):
+        if flag in arguments:
+            autostart = platform_autostart()
+            if autostart is None:
+                return 1
+            try:
+                autostart.set_enabled(enabled)
+            except OSError:
+                return 1
+            return 0
+    return None
+
+
 def main():
     app = QApplication(sys.argv)
     app.setApplicationName(application_name())
@@ -1509,11 +1536,18 @@ def main():
     app.setWindowIcon(icon)
 
     instance = SingleInstance(application_name())
+    command_result = run_command(sys.argv[1:], instance)
+    if command_result is not None:
+        return command_result
     if not instance.acquire():
         # Already running: bring that copy's window up instead of starting another.
         instance.notify_running()
         return 0
     instance.listen()
+    try:
+        ensure_config()  # First run: reuse an old portable config or write the starter set.
+    except OSError as error:
+        print(f"Cannot create config: {error}", flush=True)
 
     window = MacroPadWindow()
     tray = None
@@ -1528,6 +1562,7 @@ def main():
         window.attach_tray(tray)
         app.setQuitOnLastWindowClosed(False)
     instance.activation_requested.connect(window.show_from_tray if tray else window.showNormal)
+    instance.quit_requested.connect(window.request_quit)
     if tray is None or BACKGROUND_FLAG not in sys.argv[1:]:
         window.show()
 
@@ -1536,7 +1571,6 @@ def main():
     finally:
         if tray is not None:
             tray.hide()
-        instance.release()
         window.stop_foreground_monitor()
         window.worker.stop.set()
         window.recorder.finish()
@@ -1546,6 +1580,10 @@ def main():
         if sys.platform == "darwin" and getattr(sys, "frozen", False):
             import shiboken6
             shiboken6.delete(window)
+
+        # Last: once the lock is free, `--quit` (and the installer) treat the app as gone,
+        # so the serial port must already be closed by now.
+        instance.release()
 
     return exit_code
 

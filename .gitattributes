@@ -6,3 +6,4 @@
 *.ico binary
 *.icns binary
 *.wav binary
+*.sh text eol=lf

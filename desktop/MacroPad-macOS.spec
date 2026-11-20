@@ -1,8 +1,11 @@
 # -*- mode: python ; coding: utf-8 -*-
 
 from pathlib import Path
+import sys
 
 project = Path(SPECPATH)
+sys.path.insert(0, str(project))
+from version import VERSION
 
 assets = [
     "macropad_device.png",
@@ -15,10 +18,9 @@ a = Analysis(
     [str(project / "app.py")],
     pathex=[str(project)],
     binaries=[],
-    datas=[
-        (str(project / "config.json"), "."),
-        *[(str(project / "assets" / name), "assets") for name in assets],
-    ],
+    # No config.json is bundled: settings are created on first run in
+    # ~/Library/Application Support/Macro Pad/ (see starter_config.py).
+    datas=[(str(project / "assets" / name), "assets") for name in assets],
     hiddenimports=[
         "pynput.keyboard._darwin",
         "pynput.mouse._darwin",
@@ -66,5 +68,11 @@ app = BUNDLE(
     icon=str(project / "assets" / "app_icon.icns"),
     bundle_identifier="com.macropad.desktop",
     # Menu-bar app: no Dock icon; the window opens from the menu-bar icon.
-    info_plist={"LSUIElement": True},
+    info_plist={
+        "LSUIElement": True,
+        "CFBundleShortVersionString": VERSION,
+        "CFBundleVersion": VERSION,
+        # Shown when macOS asks for permission to control the keyboard.
+        "NSAppleEventsUsageDescription": "Macro Pad sends the shortcuts you assign to your keys.",
+    },
 )

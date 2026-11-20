@@ -7,6 +7,7 @@ import serial
 from pynput.keyboard import Controller
 from pynput.mouse import Controller as MouseController
 
+from app_paths import ensure_config
 from config_store import ConfigStore, compile_actions
 from detect_device import MAX_LINE_BYTES, find_macro_pad
 from foreground_app import get_foreground_application
@@ -248,6 +249,7 @@ def run_engine(stop, on_connection=None, on_profile=None, on_status=None, reconn
 def main():
     stop = Event()
     try:
+        ensure_config()
         run_engine(stop)
     except KeyboardInterrupt:
         pass

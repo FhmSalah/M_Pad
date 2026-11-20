@@ -13,6 +13,10 @@ One Python / PySide6 code base for both platforms.
 | `app_paths.py` | Where the config lives on each platform |
 | `tray.py` | Tray / menu-bar icon with Open, Start at login, and Quit |
 | `autostart.py` | Start at login: Windows Run key, macOS Launch Agent |
+| `starter_config.py` | Key mappings a new user starts with |
+| `version.py` | App version used by both installers |
+| `build_installer.ps1`, `installer/windows/MacroPad.iss` | Windows setup file (Inno Setup) |
+| `build_macos.sh` | macOS `.app` and `.dmg` |
 | `single_instance.py` | Keeps one running copy; a second launch opens the first copy's window |
 | `MacroPad.spec` / `build_windows.ps1` | Windows build (PyInstaller, one-folder) |
 | `MacroPad-macOS.spec` | macOS build (PyInstaller `.app`, arm64) |
@@ -45,13 +49,16 @@ Don't run the CLI (`run_actions.py`) while the app is running, because they shar
 
 | Run | Config file |
 |---|---|
-| Windows, source (`python app.py`) | `desktop/config.json` |
-| Windows, packaged | `config.json` beside `Macro Pad.exe` |
+| Windows, source (`python app.py`) | `desktop/config.json` (git-ignored) |
+| Windows, installed | `%APPDATA%\Macro Pad\config.json` (per user) |
 | macOS, source | `~/Library/Application Support/Macro Pad DEV/config.json` |
-| macOS, packaged | `~/Library/Application Support/Macro Pad/config.json` |
+| macOS, installed | `~/Library/Application Support/Macro Pad/config.json` |
 
-`desktop/config.json` is git-ignored. Copy one from `../configs/` before running from
-source on Windows or building. Both build specs need it.
+**First run:** if the file doesn't exist, the app creates it. It copies a `config.json`
+left beside an older portable `Macro Pad.exe` if there is one; otherwise it writes the
+starter set from `starter_config.py`. The starter set has General and Browser profiles
+with all 12 keys and both knobs assigned, using Ctrl on Windows and Cmd on macOS. An
+existing file is never overwritten. No config is bundled into any build.
 
 ## Tests
 
@@ -70,28 +77,59 @@ sample config `tests/fixtures/config.json`, never your real one. Expect
 `OK (skipped=14)` on Windows; the Mac-only tests run on macOS. The process may exit
 with code 139 after printing results (Qt teardown quirk), which is harmless.
 
-## Build — Windows
+## Version
+
+`version.py` holds the version (`1.0.0`). Both installers read it, so bump it there before
+a release.
+
+## Build — Windows installer
+
+Needs Inno Setup 6 (`winget install JRSoftware.InnoSetup`).
 
 ```powershell
-copy ..\configs\windows-config.json config.json
-.\build_windows.ps1 -Python .\.venv-win\Scripts\python.exe
+.\build_installer.ps1
 ```
 
-- Output: `release\Macro Pad\` (`Macro Pad.exe`, `config.json`, `_internal\`).
-- The script refuses to overwrite an existing `release\Macro Pad`, so move it aside first.
-- It copies `desktop/config.json` into the release. Check it's the config you want.
-- Keep the folder together. The packaged app reads and writes the `config.json` next to the exe.
+- Builds the app (`build_windows.ps1 -Clean` → `release\Macro Pad\`), then the setup file
+  `dist\MacroPad-Setup-<version>.exe` from `installer\windows\MacroPad.iss`.
+- The setup file installs for all users into `C:\Program Files\Macro Pad` (admin prompt),
+  with a Start menu entry and two options, both ticked by default: **desktop shortcut** and
+  **start at login**. Start at login is set for the user who runs the installer.
+- Upgrading: run a newer setup file. It closes the running app first (`Macro Pad.exe
+  --quit`, then ends the process if needed) and keeps every user's settings.
+- Uninstalling (Settings → Apps → Macro Pad) closes the app and removes the program,
+  shortcuts and login entry. Settings in `%APPDATA%\Macro Pad\` are kept.
+- Silent install: `MacroPad-Setup-1.0.0.exe /SILENT /TASKS="desktopicon,startatlogin"`.
+- The build is unsigned, so Windows SmartScreen shows "Windows protected your PC" →
+  **More info → Run anyway**.
 
-## Build — macOS
+Just the app folder, without an installer: `.\build_windows.ps1 -Python .\.venv-win\Scripts\python.exe`.
+
+### Command-line options (used by the installer)
+
+| Option | Effect |
+|---|---|
+| `--background` | Start hidden in the tray |
+| `--quit` | Close the running copy cleanly; returns once it has exited |
+| `--enable-autostart` / `--disable-autostart` | Turn start at login on/off, then exit |
+
+## Build — macOS disk image
+
+Run on a Mac with Apple Silicon:
 
 ```sh
-cp ../configs/mac-source-folder-config.json config.json   # spec bundles it; real config is in Application Support
-.venv/bin/python -m PyInstaller MacroPad-macOS.spec
+./build_macos.sh
 ```
 
-- Output: `dist/Macro Pad.app` (arm64).
-- Back up `/Applications/Macro Pad.app` and its config before replacing it.
-- Re-enable Accessibility for the new app if shortcuts stop working.
+- Output: `dist/Macro Pad.app` and `dist/MacroPad-<version>-macOS.dmg`. Open the `.dmg` and
+  drag **Macro Pad** onto **Applications**.
+- The app is ad-hoc signed but **not notarized** (that needs a paid Apple Developer
+  account). The first time it's opened, macOS blocks it: open **System Settings → Privacy &
+  Security**, scroll down and click **Open Anyway**.
+- Give it **Accessibility** permission (System Settings → Privacy & Security →
+  Accessibility) so it can send shortcuts. After replacing the app you may need to switch
+  that permission off and on again.
+- **Not yet tested** on a Mac: the script, the menu-bar mode and start at login.
 
 ## Action format
 
