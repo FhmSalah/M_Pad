@@ -72,7 +72,10 @@ Goal: publish the project so others can build and use it. Steps, in order:
    - macOS: `desktop/build_macos.sh` → `.app` + `.dmg` (ad-hoc signed, not notarized).
      **Run it on the Mac** and test: drag-install, Open Anyway, Accessibility, menu bar,
      start at login, first-run starter config.
-5. Plan the demo video for the project presentation.
+5. **Demo video plan**: done 2026-11-20 → `docs/presentation/demo-video-plan.md`
+   (60–90 s, 9-shot list tied to the slides, prep checklist, how to add it to slide 14).
+   The presentation PDF is `D:\Desktop\Make MP APP\Macro Pad_Project Journey.pdf` (not in git).
+   Recording and editing are up to the user.
 6. Publish on GitHub as open source, with a full README (wiring, firmware, protocol,
    setup, roadmap). Review `docs/history/` for personal paths before going public.
 

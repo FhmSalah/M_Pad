@@ -21,6 +21,7 @@ Macro Pad (USB serial, 115200)  ->  desktop app  ->  Windows / macOS shortcuts &
 | [`firmware/`](firmware/) | ESP32-C3 firmware (PlatformIO). **Not yet copied in — lives on the Mac** |
 | [`docs/hardware/`](docs/hardware/) | Wiring images (current matrix + obsolete original) |
 | [`docs/design/`](docs/design/) | Original UI design mockup |
+| [`docs/presentation/`](docs/presentation/) | Demo video plan for the Project Journey presentation |
 | [`docs/history/`](docs/history/) | Older state notes, audits and handoffs, kept for reference |
 
 There is **one** source tree for both platforms. Platform-specific code is
