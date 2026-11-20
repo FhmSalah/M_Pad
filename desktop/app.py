@@ -24,10 +24,9 @@ from foreground_app import (APPLICATION_NAME_ALIASES, MACOS_APPLICATION_ALIASES,
 from run_actions import ActionGate, run_engine
 from shortcut_keys import MEDIA_LABELS, action_label, resolve_action, shortcut_label
 from shortcut_recorder import ShortcutRecorder
+from autostart import BACKGROUND_FLAG, platform_autostart
 from single_instance import SingleInstance
 from tray import TrayIcon
-
-BACKGROUND_FLAG = "--background"  # Start hidden in the tray (used by start-at-login).
 
 try:
     from PySide6.QtMultimedia import QSoundEffect
@@ -1519,7 +1518,13 @@ def main():
     window = MacroPadWindow()
     tray = None
     if TrayIcon.available():
-        tray = TrayIcon(icon, application_name(), window)
+        autostart = platform_autostart()
+        if autostart is not None:
+            try:
+                autostart.refresh()  # Follow the app if its folder was moved.
+            except OSError:
+                pass
+        tray = TrayIcon(icon, application_name(), window, autostart)
         window.attach_tray(tray)
         app.setQuitOnLastWindowClosed(False)
     instance.activation_requested.connect(window.show_from_tray if tray else window.showNormal)

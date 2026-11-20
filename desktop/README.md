@@ -11,7 +11,8 @@ One Python / PySide6 code base for both platforms.
 | `detect_device.py` | Finds the pad on serial ports via the `WHO` handshake |
 | `shortcut_keys.py`, `shortcut_recorder.py` | Key names, shortcut recording |
 | `app_paths.py` | Where the config lives on each platform |
-| `tray.py` | Tray / menu-bar icon with Open and Quit |
+| `tray.py` | Tray / menu-bar icon with Open, Start at login, and Quit |
+| `autostart.py` | Start at login: Windows Run key, macOS Launch Agent |
 | `single_instance.py` | Keeps one running copy; a second launch opens the first copy's window |
 | `MacroPad.spec` / `build_windows.ps1` | Windows build (PyInstaller, one-folder) |
 | `MacroPad-macOS.spec` | macOS build (PyInstaller `.app`, arm64) |
@@ -24,6 +25,19 @@ One Python / PySide6 code base for both platforms.
   or use its menu → **Open** to show it again. **Quit** in the tray menu stops the app.
 - Launching the app again while it's running only opens the existing window.
 - `app.py --background` starts hidden in the tray (used by start-at-login).
+
+## Start at login
+
+Tray menu → **Start at login** turns it on or off (`autostart.py`):
+
+| OS | Where it's stored | Also visible in |
+|---|---|---|
+| Windows | `HKCU\Software\Microsoft\Windows\CurrentVersion\Run` → `Macro Pad` | Task Manager → Startup apps |
+| macOS | `~/Library/LaunchAgents/com.macropad.desktop.plist` | System Settings → General → Login Items |
+
+Turning it off in Task Manager also clears the tick in the app. Source runs use separate
+entries (`Macro Pad (source)` / `com.macropad.desktop.dev`), so they never replace the
+installed app's entry.
 
 Don't run the CLI (`run_actions.py`) while the app is running, because they share the serial port.
 

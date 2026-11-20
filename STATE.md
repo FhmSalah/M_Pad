@@ -21,8 +21,8 @@ conflict. Update it at the end of every work session.
 | Hardware | Done. 12 keys + 2 encoders + 2 encoder clicks, all 18 events verified |
 | Firmware | Frozen V1. Source is on the Mac, **not in this repo yet** |
 | macOS app | Installed at `/Applications/Macro Pad.app`, working (2026-10-11) |
-| Windows app | Tray version built 2026-11-20 and smoke-tested; installed at `D:\Desktop\Make MP APP\Macro Pad\` |
-| Source | `desktop/`, one tree for both platforms. 176 tests pass on Windows (14 Mac-only skipped) |
+| Windows app | Tray + start-at-login version built 2026-11-20 and smoke-tested; installed at `D:\Desktop\Make MP APP\Macro Pad\`; start at login **on** |
+| Source | `desktop/`, one tree for both platforms. 192 tests pass on Windows (14 Mac-only skipped) |
 
 ## Open-source plan (started 2026-11-20)
 
@@ -41,8 +41,29 @@ Goal: publish the project so others can build and use it. Steps, in order:
      **Check on a Mac**: the menu-bar icon, the window coming to the front, and Quit.
    - Windows desktop shortcut `D:\Desktop\Macro Pad.lnk` made by hand for now; the
      installer (step 4) will create it properly.
-3. Start automatically at login on Windows and macOS, with an on/off option in the app.
-4. Installers: a Windows setup `.exe` and a macOS download.
+3. **Start at login**: done 2026-11-20 (Windows tested, macOS untested).
+   - `autostart.py`. Windows: value `Macro Pad` in `HKCU\...\CurrentVersion\Run` running
+     `"<exe>" --background`; it respects the on/off switch in Task Manager → Startup apps.
+     macOS: `~/Library/LaunchAgents/com.macropad.desktop.plist` (`RunAtLoad`, no
+     `KeepAlive`, so Quit stays quit).
+   - Toggle: tray menu → **Start at login** (ticked = on). The tick is re-read from the OS
+     every time the menu opens. The OS entry is the only state; nothing goes in config.json.
+   - At startup the app re-points an existing entry if the app folder moved; it never
+     turns the option on by itself.
+   - Source runs use separate entries (`Macro Pad (source)`, `com.macropad.desktop.dev`).
+   - Removed an old `Macro Pad_MacroPad` login entry that started
+     `%USERPROFILE%\Downloads\Programs\Macro Pad.exe` (an early build); it would have
+     fought over the serial port. Registry backup: `Backups\2026-11-20_startup-entries\`.
+     The exe itself is still in Downloads.
+   - **Check on a Mac**: toggle on, log out and in, and confirm it appears under System
+     Settings → General → Login Items.
+4. Installers: a Windows setup `.exe` and a macOS download. Things to handle:
+   - An installed app in Program Files can't write `config.json` beside the exe, so move
+     the Windows packaged config to `%APPDATA%\Macro Pad\` (copy the old file on first run).
+   - The app no longer quits when its window closes, so the installer must close it
+     (Quit or end the process) before replacing files.
+   - Offer "Start at login" and "Desktop shortcut" in the installer; the uninstaller must
+     remove the Run entry.
 5. Plan the demo video for the project presentation.
 6. Publish on GitHub as open source, with a full README (wiring, firmware, protocol,
    setup, roadmap). Review `docs/history/` for personal paths before going public.

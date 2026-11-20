@@ -13,16 +13,25 @@ class TrayIcon(QObject):
     open_requested = Signal()
     quit_requested = Signal()
 
-    def __init__(self, icon, title, parent=None):
+    def __init__(self, icon, title, parent=None, autostart=None):
         super().__init__(parent)
         self.title = title
         self.connected = False
         self.profile = None
         self.hint_shown = False
+        self.autostart = autostart
         self.icon = QSystemTrayIcon(icon, self)
         self.menu = QMenu()
         self.open_action = self.menu.addAction("Open")
         self.open_action.triggered.connect(self.open_requested.emit)
+        self.autostart_action = None
+        if autostart is not None:
+            self.autostart_action = self.menu.addAction("Start at login")
+            self.autostart_action.setCheckable(True)
+            self.autostart_action.toggled.connect(self.set_autostart)
+            # Re-read each time: the user may change it in Task Manager / System Settings.
+            self.menu.aboutToShow.connect(self.sync_autostart)
+            self.sync_autostart()
         self.menu.addSeparator()
         self.quit_action = self.menu.addAction("Quit")
         self.quit_action.triggered.connect(self.quit_requested.emit)
@@ -45,6 +54,25 @@ class TrayIcon(QObject):
         # macOS shows the menu on click, so only double-click opens the window directly.
         if reason == QSystemTrayIcon.ActivationReason.DoubleClick:
             self.open_requested.emit()
+
+    @Slot()
+    def sync_autostart(self):
+        try:
+            enabled = self.autostart.is_enabled()
+        except OSError:
+            enabled = False
+        blocked = self.autostart_action.blockSignals(True)
+        self.autostart_action.setChecked(enabled)
+        self.autostart_action.blockSignals(blocked)
+
+    @Slot(bool)
+    def set_autostart(self, enabled):
+        try:
+            self.autostart.set_enabled(enabled)
+        except OSError as error:
+            self.icon.showMessage(self.title, f"Couldn't change Start at login: {error}",
+                                  QSystemTrayIcon.MessageIcon.Warning, 5000)
+        self.sync_autostart()
 
     @Slot(bool)
     def set_connection(self, connected):
