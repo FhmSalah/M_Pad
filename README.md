@@ -15,9 +15,8 @@ Macro Pad  ──USB serial──▶  desktop app  ──▶  shortcuts · media
 (ESP32-C3)   "KEY:5"        (profiles)         in whatever app is in front
 ```
 
-**Status:** V1, stable. The Windows app and installer are tested. The macOS app has been
-used daily, but the newest features (tray mode, start at login, `.dmg`) haven't been tested
-on a Mac yet. The firmware source, wiring map and protocol are all in this repo.
+**Status:** V1, stable. The Windows installer and the macOS `.dmg` (Apple Silicon) are both
+tested. The firmware source, wiring map and protocol are all in this repo.
 
 ## Contents
 
@@ -218,8 +217,7 @@ Tests: `cd desktop/tests` then `python -m unittest discover -s .` with
 - [x] **V1:** 12 keys, 2 knobs with clicks, profiles, automatic profiles, Windows + macOS
 - [x] Tray mode, start at login, Windows installer (`MacroPad-Setup-1.0.0.exe`)
 - [x] Firmware source in this repo
-- [ ] macOS download (`.dmg`): build script ready, not yet built and tested on a Mac
-      ([how to finish it](docs/finish-on-mac.md))
+- [x] macOS download (`MacroPad-1.0.0-macOS.dmg`, Apple Silicon), tested on a Mac
 - [ ] **V1.5:** Fn layer, knob modifiers (Fn + knob), tap vs hold
 - [ ] **V2:** Bluetooth and a battery for wireless use
 - [ ] **V2:** advanced key combos and a redesigned case

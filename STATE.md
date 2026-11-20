@@ -22,9 +22,9 @@ Status, decisions and to-dos for anyone working on the code. User docs are in
 | Hardware | Done. All 18 inputs (12 keys, 4 knob turns, 2 knob clicks) verified |
 | Firmware | V1, frozen. Source in `firmware/` (PlatformIO); builds cleanly (4% RAM, 19% flash) |
 | Windows app | 1.0.0, tested: tray, start at login, installer (install, upgrade, uninstall) |
-| macOS app | Used daily as of Oct 2026. **Not yet tested on a Mac:** tray/menu-bar mode, start at login, `build_macos.sh`, first-run starter config |
-| Tests | 206 pass on Windows (14 Mac-only tests skip there) |
-| Published | Public on GitHub since 2026-11-20 (GPL-3.0); release v1.0.0 with the Windows installer |
+| macOS app | 1.0.0, tested on macOS 15 (Apple Silicon) on 2026-11-20: `.dmg` build and drag-install, menu-bar mode (no Dock icon), keys and knobs, close-to-menu-bar and Open, start at login, automatic profiles (Finder → Brave → Finder). **Not tested:** first-run starter config (an existing config was kept), Intel Macs |
+| Tests | 206 pass on Windows (14 Mac-only tests skip there). On macOS: 199 pass, 7 fail (see Known issues) |
+| Published | Public on GitHub since 2026-11-20 (GPL-3.0); release v1.0.0 with the Windows installer and the macOS `.dmg` |
 
 ## How it fits together
 
@@ -64,15 +64,22 @@ Status, decisions and to-dos for anyone working on the code. User docs are in
 
 ## Next steps
 
-1. **On the Mac:** follow `docs/finish-on-mac.md`; `tools/finish_on_mac.sh` runs the tests
-   and builds the `.dmg`.
-2. **Test on a Mac:** run the tests, run from source, then `./build_macos.sh` and check
-   the drag-install, Open Anyway, Accessibility, menu bar, start at login, the first-run
-   starter config, and automatic profiles (Finder → Brave → Finder gives General → Browser → General).
-3. Publish the `.dmg` alongside the Windows installer in the GitHub Release.
-4. Record the demo video (`docs/presentation/demo-video-plan.md`) and link it from the README.
+1. **Fix the 7 macOS test failures** (see Known issues), checking `--quit` first.
+2. Record the demo video (`docs/presentation/demo-video-plan.md`) and link it from the README.
 
 ## Known issues
+
+- **7 tests fail on macOS** (2026-11-20, `QT_QPA_PLATFORM=offscreen`, unittest):
+  - `test_install_support`: `test_quit_closes_a_running_copy` (`AssertionError: 1 != 0`) and
+    `test_wait_for_exit` (`AssertionError: False is not true`). These cover `--quit` (used by
+    installers to close a running copy). Quit wasn't part of the manual Mac checks: check it first.
+  - `test_ui_polish.test_app_naming_and_resource_icon`: `'Macro Pad DEV' != 'Macro Pad'`.
+  - `test_v1_audit.test_config_path_source_and_frozen_ignore_working_directory`: expects
+    `desktop/config.json`, gets `~/Library/Application Support/Macro Pad DEV/config.json`.
+  - `test_v1_editor`: `test_editor_follows_active_profile_and_save_is_live` and
+    `test_recorder_waits_for_releases_and_ignores_repeat` expect `ctrl` where macOS records
+    `cmd`; `test_supported_key_names_and_invalid_entries` rejects `insert`.
+  - The last five look like tests that assume Windows, not app bugs.
 
 - The full test run can exit with a Qt crash (code 139) **after** all results print.
   It's a test-teardown quirk, not an app bug.
