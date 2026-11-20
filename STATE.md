@@ -24,6 +24,7 @@ Status, decisions and to-dos for anyone working on the code. User docs are in
 | Windows app | 1.0.0, tested: tray, start at login, installer (install, upgrade, uninstall) |
 | macOS app | Used daily as of Oct 2026. **Not yet tested on a Mac:** tray/menu-bar mode, start at login, `build_macos.sh`, first-run starter config |
 | Tests | 206 pass on Windows (14 Mac-only tests skip there) |
+| Published | Public on GitHub since 2026-11-20 (GPL-3.0); release v1.0.0 with the Windows installer |
 
 ## How it fits together
 
